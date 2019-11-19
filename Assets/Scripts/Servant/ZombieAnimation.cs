@@ -40,7 +40,7 @@ public class ZombieAnimation : MonoBehaviour
         {
             angleSpeed *= -1;
         }
-        animator.SetFloat("speed", speedPercent, locomotionSmoothTime, Time.deltaTime);
+        animator.SetFloat("speed", speedPercent, locomotionSmoothTime, 2.0f * Time.deltaTime);
         animator.SetFloat("angularspeed", angleSpeed, locomotionSmoothTime, Time.deltaTime);
         CheckZombieState();
         
@@ -51,6 +51,8 @@ public class ZombieAnimation : MonoBehaviour
         switch (zombie.currentState)
         {
             case Zombie.CurrentState.Idle:
+                animator.SetFloat("speedMultiplier", 0f);
+                
                 break;
             case Zombie.CurrentState.Wander:
                 animator.SetFloat("speedMultiplier", 0.5f);
@@ -60,6 +62,7 @@ public class ZombieAnimation : MonoBehaviour
                 animator.SetFloat("speedMultiplier", 1f);
                 break;
             case Zombie.CurrentState.Attack:
+                animator.SetBool("attack", true);
                 
                 break;
             
@@ -80,5 +83,5 @@ public class ZombieAnimation : MonoBehaviour
     }
 
 
-  
+ 
 }

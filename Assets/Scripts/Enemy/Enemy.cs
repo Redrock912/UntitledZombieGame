@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-
+    public event System.Action OnEnemyDeath;
     public float lookRadius = 10f;
 
-    int ammo;
+    private int ammo;
     public int maxAmmo;
 
     float weaponRange = 10f;
-    public float fireRate = 1f;
+    public float fireRate = 0.2f;
     private float gunCoolDown = 0f;
 
     public float turnTime = 10f;
@@ -19,6 +19,7 @@ public class Enemy : MonoBehaviour
     Transform target;
     public Light spotLight;
 
+    public bool isAlive = true;
 
     List<Zombie> zombiesInRange;
 
@@ -27,7 +28,7 @@ public class Enemy : MonoBehaviour
     void Start()
     {
         zombiesInRange = new List<Zombie>();
-        
+        ammo = maxAmmo;
     }
 
 
@@ -81,19 +82,20 @@ public class Enemy : MonoBehaviour
 
     void UpdateTarget()
     {
-
-
         float nearestDistance = Mathf.Infinity;
         GameObject nearestZombie = null;
         foreach(var z in zombiesInRange)
         {
-            float currentDistance = Vector3.Distance(transform.position, z.transform.position);
-
-            if(currentDistance < nearestDistance)
+            if (z.isAlive)
             {
-                nearestDistance = currentDistance;
-                nearestZombie = z.gameObject;
+                float currentDistance = Vector3.Distance(transform.position, z.transform.position);
 
+                if (currentDistance < nearestDistance)
+                {
+                    nearestDistance = currentDistance;
+                    nearestZombie = z.gameObject;
+
+                }
             }
         }
 
@@ -106,9 +108,7 @@ public class Enemy : MonoBehaviour
         else
         {
             target = null;
-        }
-
-        
+        }     
     }
 
     void FaceTarget()
@@ -120,11 +120,21 @@ public class Enemy : MonoBehaviour
         transform.rotation = Quaternion.Euler(0f, rotation.y, 0f);
     }
 
-    void Shoot()
+    void Shoot(Transform hitTarget = null)
     {
-        Vector3 dir = (transform.position - target.position).normalized;
-        dir *= -1;
-        target.GetComponent<Zombie>().TakeDamage(dir);
+        if (hitTarget)
+        {
+            target = hitTarget;
+        }
+
+        if (target)
+        {
+
+            Vector3 dir = (transform.position - target.position).normalized;
+            dir *= -1;
+            target.GetComponent<Zombie>().TakeDamage(dir);
+            ammo--;
+        }
     }
 
 
@@ -171,5 +181,55 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    private void OnTriggerExit(Collider other)
+    {
+        Zombie nearZombie = other.GetComponentInParent<Zombie>();
+        if (nearZombie != null)
+        {
+            bool exists = false;
+
+            foreach (var z in zombiesInRange)
+            {
+
+                if (z == nearZombie && z.isAlive == true)
+                {
+                    exists = true;
+                }
+            }
+
+
+            if (exists)
+            {
+                zombiesInRange.Remove(nearZombie);
+                nearZombie.OnZombieDeath -= () => EraseZombie(nearZombie);
+            }
+        }
+    }
+
+    public void TakeDamage(Transform target)
+    {
+        //reactive shot
+        if (ammo > 0)
+        {
+            Shoot(target);
+        }
+        else
+        {
+            Die();
+        }
+        
+    }
+
+    void Die()
+    {
+        if(OnEnemyDeath!= null)
+        {
+            OnEnemyDeath();
+        }
+
+
+        isAlive = false;
+        Destroy(gameObject);
+    }
 
 }
