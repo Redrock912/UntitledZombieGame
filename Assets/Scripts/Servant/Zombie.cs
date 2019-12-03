@@ -61,10 +61,10 @@ public class Zombie : MonoBehaviour
 
     public void TakeDamage(Vector3 forceDirection = new Vector3())
     {
-        print("In Take");
+        
         if (OnZombieDeath != null)
         {
-            print("Is not null");
+        
             OnZombieDeath();
             isAlive = false;
             OnZombieDeath = null;
@@ -113,7 +113,7 @@ public class Zombie : MonoBehaviour
             {
                 MoveToLocation(target.position, true);
 
-                print("target lock on");
+                
                 if (agent.remainingDistance <= agent.stoppingDistance + enemySafeDistance)
                 {
                     currentState = CurrentState.Attack;

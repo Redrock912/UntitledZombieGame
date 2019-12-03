@@ -107,13 +107,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ball: {fileID: 1052942477481364371}
-  searchCollider: {fileID: 0}
-  h: 4
+  h: 1
   gravity: -10
-  velocity: 0
+  velocity: 100
   destinationPoint: {x: 0, y: 0, z: 0}
   targetVector: {x: 0, y: 0, z: 0}
   debugPath: 0
+  launcher: {fileID: 0}
 --- !u!54 &1052942477481364371
 Rigidbody:
   m_ObjectHideFlags: 0

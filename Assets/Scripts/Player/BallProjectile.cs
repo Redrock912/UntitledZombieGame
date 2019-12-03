@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class BallProjectile : MonoBehaviour
 {
+
+    private event System.Action OnBallDestroy;
+
     public static BallProjectile instance;
     
     public Rigidbody ball;
@@ -24,6 +27,8 @@ public class BallProjectile : MonoBehaviour
     private Camera cam;
     LineDrawer[] lineDrawer;
 
+    public Transform launcher;
+    private bool isLaunched = false;
     
     // Start is called before the first frame update
     private void Awake()
@@ -44,8 +49,12 @@ public class BallProjectile : MonoBehaviour
 
     void Start()
     {
-
+        cam = Camera.main;
         lineDrawer = new LineDrawer[30];
+        foreach(var i in lineDrawer)
+        {
+            OnBallDestroy += i.Destroy;
+        }
         ball.useGravity = false;
 
 
@@ -64,26 +73,51 @@ public class BallProjectile : MonoBehaviour
             Launch();
         }
 
-
+        if (ball.transform.position.y < -1)
+        {
+            foreach(var i in lineDrawer)
+            {
+                
+                i.Destroy();
+            }
+            Destroy(gameObject, .5f);
+        }
     }
+
+    //private void FixedUpdate()
+    //{
+    //    if(isLaunched == false)
+    //    {
+    //        FollowLaunchPosition();
+    //    }
+        
+    //}
+
+    //void FollowLaunchPosition()
+    //{
+    //    transform.position = launcher.position;
+    //}
 
     public void Launch()
     {
+        isLaunched = true;
         Physics.gravity = Vector3.up * gravity;
         ball.useGravity = true;
+        print(CalculateDestination().initialVelocity);
         ball.velocity = CalculateDestination().initialVelocity;
         foreach (var i in lineDrawer)
         {
             i.Destroy();
         }
 
+        
 
     }
 
 
     LaunchData CalculateDestination()
     {
-        cam = Camera.main;
+        
         Ray camRay = cam.ScreenPointToRay(Input.mousePosition);
         LayerMask hitMask =  LayerMask.GetMask("MousePosition");
        
@@ -137,25 +171,34 @@ public class BallProjectile : MonoBehaviour
     
     private void OnCollisionEnter(Collision collision)
     {
-        
-        ball.Sleep();
 
-        colliderArray = Physics.OverlapSphere(transform.position, 10f);
 
-        Zombie zombie;
-        foreach(var collider in colliderArray)
+        if (isLaunched)
         {
-            zombie = collider.transform.GetComponentInParent<Zombie>();
+            ball.Sleep();
 
-          
-            if (zombie != null)
+            colliderArray = Physics.OverlapSphere(transform.position, 10f);
+
+            Zombie zombie;
+            foreach (var collider in colliderArray)
             {
-                
-                zombie.SetTargetPosition(transform.position);
-            }
-        }
+                zombie = collider.transform.GetComponentInParent<Zombie>();
 
-        Destroy(gameObject, 0.5f);
+
+                if (zombie != null)
+                {
+
+                    zombie.SetTargetPosition(transform.position);
+                }
+            }
+            if(OnBallDestroy != null)
+            {
+                OnBallDestroy();
+            }
+            Destroy(gameObject, 0.5f);
+        }
+        
+        
     }
 
 
@@ -179,6 +222,7 @@ public class BallProjectile : MonoBehaviour
         public LineDrawer(float lineSize = 0.2f)
         {
             GameObject lineObj = new GameObject("LineObj");
+            
             lineRenderer = lineObj.AddComponent<LineRenderer>();
             //Particles/Additive
             lineRenderer.material = new Material(Shader.Find("Hidden/Internal-Colored"));
@@ -227,7 +271,8 @@ public class BallProjectile : MonoBehaviour
         {
             if (lineRenderer != null)
             {
-                UnityEngine.Object.Destroy(lineRenderer.gameObject);
+                Object.Destroy(lineRenderer.gameObject);
+
             }
         }
 

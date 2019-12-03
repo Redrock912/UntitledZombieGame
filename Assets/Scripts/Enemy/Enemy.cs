@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
 {
@@ -16,19 +17,49 @@ public class Enemy : MonoBehaviour
 
     public float turnTime = 10f;
     public float viewAngle;
-    Transform target;
+    private NavMeshAgent agent;
+    private Transform target;
+    private Transform ammoBoxTarget;
     public Light spotLight;
+
+    private Vector3 lastPosition;
 
     public bool isAlive = true;
 
     List<Zombie> zombiesInRange;
+    private List<Transform> ammoBoxInMap = new List<Transform>();
+
+    private Vector3 lastLocation;
+
+
+    private void Awake()
+    {
+        GameObject[] ammoBoxObject = GameObject.FindGameObjectsWithTag("AmmoBox");
+
+        foreach(var ammoBox in ammoBoxObject)
+        {
+            ammoBoxInMap.Add(ammoBox.transform);
+           
+        }
+    }
 
 
     // Start is called before the first frame update
     void Start()
     {
+        lastLocation = transform.position;
+        agent = GetComponent<NavMeshAgent>();
         zombiesInRange = new List<Zombie>();
+        RefillAmmo();
+        print(ammoBoxInMap.Count);
+    }
+
+    public void RefillAmmo()
+    {
         ammo = maxAmmo;
+        print("Current Ammo is " + ammo);
+        agent.SetDestination(lastLocation);
+        
     }
 
 
@@ -37,6 +68,7 @@ public class Enemy : MonoBehaviour
         if(ammo <= 0)
         {
             FindAmmoBox();
+            
         }
         else
         {
@@ -51,33 +83,69 @@ public class Enemy : MonoBehaviour
 
     void FindAmmoBox()
     {
+        float nearestAmmoBox = Mathf.Infinity;
+        Transform result = null;
+        foreach(var ammoBox in ammoBoxInMap)
+        {
+            
+            float distance = Vector3.Distance(transform.position, ammoBox.position);
+            
 
+            if(distance < nearestAmmoBox)
+            {
+                result = ammoBox;
+                nearestAmmoBox = distance;
+            }
+            
+        }
+
+        ammoBoxTarget = result;
     }
 
     // Update is called once per frame
     void Update()
     {
-       if(zombiesInRange.Count > 0)
-        {
-            UpdateTarget();
 
-            if(gunCoolDown <= 0f)
+        if (ammo <= 0)
+        {
+            FindAmmoBox();
+            if(ammoBoxTarget != null)
             {
-                //Shoot();
-                gunCoolDown = 1f / fireRate;
+                agent.SetDestination(ammoBoxTarget.position);
+
+                // save only once...
+                
+                agent.isStopped = false;
+            }
+        }
+        else
+        {
+            if (zombiesInRange.Count > 0)
+            {
+                UpdateTarget();
+
+                if (gunCoolDown <= 0f)
+                {
+
+                    Shoot();
+                    gunCoolDown = 1f / fireRate;
+
+                }
+            }
+
+
+            if (gunCoolDown > 0)
+            {
+                gunCoolDown -= Time.deltaTime;
             }
         }
 
-
-        if (gunCoolDown > 0)
-        {
-            gunCoolDown -= Time.deltaTime;
-        }
+       
         
         
     }
 
-
+   
 
 
     void UpdateTarget()
@@ -140,7 +208,7 @@ public class Enemy : MonoBehaviour
 
     void EraseZombie(Zombie selectedZombie)
     {
-        print("Erased Zombie");
+        
         zombiesInRange.Remove(selectedZombie);
 
 
