@@ -110,8 +110,6 @@ public class BallProjectile : MonoBehaviour
             i.Destroy();
         }
 
-        
-
     }
 
 
@@ -275,7 +273,6 @@ public class BallProjectile : MonoBehaviour
 
             }
         }
-
 
     }
 }

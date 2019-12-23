@@ -16,4 +16,6 @@ public class ActorManager : MonoBehaviour
     #endregion
 
     public GameObject player;
+
+    public GameObject zombiePartPrefab;
 }

@@ -30,17 +30,32 @@ public class AmmoBox : MonoBehaviour
         foreach(var enemyObject in enemiesObject)
         {
             enemies.Add(enemyObject.GetComponent<Enemy>());
+            
         }
+
+        foreach(var enemy in enemies)
+        {
+            enemy.OnEnemyDeath += () => EnemyDied(enemy);
+        }
+
     }
 
+    private void Start()
+    {
+      
+    }
+
+    public void EnemyDied(Enemy enemy)
+    {
+        enemies.Remove(enemy);
+    }
 
     public void CheckForDistanceAndBlock()
     {
         
         foreach(var enemy in enemies)
         {
-            print(enemies.Count);
-            print(enemy);
+
 
            if(Vector3.Distance(transform.position, enemy.transform.position) < refillDistance)
            {

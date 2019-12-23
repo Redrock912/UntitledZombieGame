@@ -53,31 +53,31 @@ public class LaunchToDestination : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButton(0))
+
+        Ray camRay = cam.ScreenPointToRay(Input.mousePosition);
+        LayerMask hitMask = LayerMask.GetMask("MousePosition");
+
+        if(Physics.Raycast(camRay, out hitInfo, 100, hitMask))
         {
-
-            Ray camRay = cam.ScreenPointToRay(Input.mousePosition);
-            LayerMask hitMask = LayerMask.GetMask("MousePosition");
-
-            if (Physics.Raycast(camRay, out hitInfo, 100, hitMask))
+            
+            if (Input.GetMouseButton(0))
             {
-
                 dir = new Vector3(hitInfo.point.x - transform.position.x, 0, hitInfo.point.z - transform.position.z);
 
                 maxDistance = dir.magnitude;
 
-                RenderEstimation(CalculatePositions(maxDistance,dir.normalized));
+                RenderEstimation(CalculatePositions(maxDistance, dir.normalized));
 
-                // turn the launcher
-                transform.LookAt(dir);
+            }
+            else
+            {
+                mesh.Clear();
             }
 
-            
+           
         }
-
         
 
-        
     }
 
 

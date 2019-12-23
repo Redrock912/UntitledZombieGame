@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 
-public class Zombie : MonoBehaviour
+public class Zombie : MonoBehaviour , IPooledObject
 {
 
     public event System.Action OnZombieDeath;
@@ -63,15 +63,21 @@ public class Zombie : MonoBehaviour
     {
         
         if (OnZombieDeath != null)
-        {
-        
+        {  
             OnZombieDeath();
             isAlive = false;
             OnZombieDeath = null;
+            
             // 5 = chest part
             StopAllCoroutines();
             zombieAnimation.ragdollParts[5].AddForce(forceDirection * impactMultiplier, ForceMode.Impulse);
             Destroy(gameObject, 2);
+
+            GameObject zombiePart =  Instantiate(ActorManager.instance.zombiePartPrefab, transform.forward + transform.position + new Vector3(0,2f,0), Quaternion.identity);
+
+            zombiePart.GetComponent<Rigidbody>().AddForce( new Vector3 (Random.Range(-1,1), 2 * 5f, Random.Range(-1,1)), ForceMode.Impulse);
+            zombiePart.GetComponent<Rigidbody>().detectCollisions = true;
+            //zombiePart.GetComponent<Rigidbody>().isKinematic = true;
         }
     }
 
@@ -81,6 +87,15 @@ public class Zombie : MonoBehaviour
         attractivePosition = noPosition;
         wanderPoint = RandomWanderPoint();
         agent = GetComponent<NavMeshAgent>();     
+        WanderHandle = StartCoroutine("FindNextWanderPoint");
+    }
+
+    public void OnObjectSpawn()
+    {
+        currentState = CurrentState.Idle;
+        attractivePosition = noPosition;
+        wanderPoint = RandomWanderPoint();
+        agent = GetComponent<NavMeshAgent>();
         WanderHandle = StartCoroutine("FindNextWanderPoint");
     }
 
@@ -140,7 +155,7 @@ public class Zombie : MonoBehaviour
     public void Wander()
     {
         currentState = CurrentState.Wander;
-        agent.speed = 0.5f;
+        agent.speed = 2f;
         if (Vector3.Distance(transform.position, wanderPoint) < 2f)
         {
             recentlyAttracted = false;
@@ -154,7 +169,7 @@ public class Zombie : MonoBehaviour
 
     IEnumerator WanderWithDelay()
     {
-        agent.speed = .5f;
+        agent.speed = 2f;
         while (true)
         {
             agent.destination = wanderPoint;
@@ -207,12 +222,12 @@ public class Zombie : MonoBehaviour
     {
         if (isTarget)
         {
-            agent.speed = 1f;
+            agent.speed = 5f;
             currentState = CurrentState.Chase;
         }
         else
         {
-            agent.speed = .5f;
+            agent.speed = 2f;
             currentState = CurrentState.Wander;
         }
 

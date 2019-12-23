@@ -26,20 +26,25 @@ public class Enemy : MonoBehaviour
 
     public bool isAlive = true;
 
-    List<Zombie> zombiesInRange;
+    public List<GameObject> zombiesInRange;
     private List<Transform> ammoBoxInMap = new List<Transform>();
 
     private Vector3 lastLocation;
 
 
+    // Tutorial 
+
+    public bool isEasyTutorial = false;
+    public bool isTutorialBot = false;
+
     private void Awake()
     {
         GameObject[] ammoBoxObject = GameObject.FindGameObjectsWithTag("AmmoBox");
 
-        foreach(var ammoBox in ammoBoxObject)
+        foreach (var ammoBox in ammoBoxObject)
         {
             ammoBoxInMap.Add(ammoBox.transform);
-           
+
         }
     }
 
@@ -49,9 +54,9 @@ public class Enemy : MonoBehaviour
     {
         lastLocation = transform.position;
         agent = GetComponent<NavMeshAgent>();
-        zombiesInRange = new List<Zombie>();
+        zombiesInRange = new List<GameObject>();
         RefillAmmo();
-        print(ammoBoxInMap.Count);
+
     }
 
     public void RefillAmmo()
@@ -59,124 +64,112 @@ public class Enemy : MonoBehaviour
         ammo = maxAmmo;
         print("Current Ammo is " + ammo);
         agent.SetDestination(lastLocation);
-        
+
     }
 
-
-    void MakeDecision()
-    {
-        if(ammo <= 0)
-        {
-            FindAmmoBox();
-            
-        }
-        else
-        {
-            CheckZombieInRange(5.0f);
-        }
-    }
-
-    void CheckZombieInRange(float range)
-    {
-        
-    }
 
     void FindAmmoBox()
     {
         float nearestAmmoBox = Mathf.Infinity;
         Transform result = null;
-        foreach(var ammoBox in ammoBoxInMap)
+        foreach (var ammoBox in ammoBoxInMap)
         {
-            
-            float distance = Vector3.Distance(transform.position, ammoBox.position);
-            
 
-            if(distance < nearestAmmoBox)
+            float distance = Vector3.Distance(transform.position, ammoBox.position);
+
+
+            if (distance < nearestAmmoBox)
             {
                 result = ammoBox;
                 nearestAmmoBox = distance;
             }
-            
+
         }
 
         ammoBoxTarget = result;
+        if (ammoBoxTarget != null)
+        {
+            agent.SetDestination(ammoBoxTarget.position);
+
+            // save only once...
+
+            agent.isStopped = false;
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-
-        if (ammo <= 0)
+        if (!isTutorialBot)
         {
-            FindAmmoBox();
-            if(ammoBoxTarget != null)
+            if (ammo <= 0)
             {
-                agent.SetDestination(ammoBoxTarget.position);
-
-                // save only once...
-                
-                agent.isStopped = false;
+                FindAmmoBox();
+            }
+            else
+            {
+                ShootZombieInRange();
             }
         }
         else
         {
-            if (zombiesInRange.Count > 0)
+            if (!isEasyTutorial && ammo > 0)
             {
-                UpdateTarget();
-
-                if (gunCoolDown <= 0f)
-                {
-
-                    Shoot();
-                    gunCoolDown = 1f / fireRate;
-
-                }
-            }
-
-
-            if (gunCoolDown > 0)
-            {
-                gunCoolDown -= Time.deltaTime;
+                ShootZombieInRange();
             }
         }
-
-       
-        
-        
     }
 
-   
 
+    void ShootZombieInRange()
+    {
+        if (zombiesInRange.Count > 0)
+        {
+            UpdateTarget();
+            if (gunCoolDown <= 0f)
+            {
+                Shoot();
+                gunCoolDown = 1f / fireRate;
+            }
+        }
+        if (gunCoolDown > 0)
+        {
+            gunCoolDown -= Time.deltaTime;
+        }
+    }
 
     void UpdateTarget()
     {
         float nearestDistance = Mathf.Infinity;
         GameObject nearestZombie = null;
-        foreach(var z in zombiesInRange)
+        foreach (var z in zombiesInRange)
         {
-            if (z.isAlive)
+            Zombie zombieObject = z.GetComponent<Zombie>();
+            Player playerObject = z.GetComponent<Player>();
+
+            if ((zombieObject && zombieObject.isAlive) || (playerObject && playerObject.isAlive))
             {
+
                 float currentDistance = Vector3.Distance(transform.position, z.transform.position);
 
                 if (currentDistance < nearestDistance)
                 {
                     nearestDistance = currentDistance;
-                    nearestZombie = z.gameObject;
-
+                    nearestZombie = z;
                 }
             }
         }
 
-        if(nearestZombie != null && nearestDistance <= weaponRange)
+        if (nearestZombie != null && nearestDistance <= weaponRange)
         {
             target = nearestZombie.transform;
             FaceTarget();
-            
+
         }
         else
         {
             target = null;
-        }     
+        }
     }
 
     void FaceTarget()
@@ -200,18 +193,25 @@ public class Enemy : MonoBehaviour
 
             Vector3 dir = (transform.position - target.position).normalized;
             dir *= -1;
-            target.GetComponent<Zombie>().TakeDamage(dir);
+
+            if (target.GetComponent<Zombie>())
+            {
+                target.GetComponent<Zombie>().TakeDamage(dir);
+            }
+
+            if (target.GetComponent<Player>())
+            {
+                target.GetComponent<Player>().TakeDamage(dir);
+            }
+            
             ammo--;
         }
     }
 
 
-    void EraseZombie(Zombie selectedZombie)
+    void EraseZombie(GameObject selectedZombie)
     {
-        
-        zombiesInRange.Remove(selectedZombie);
-
-
+        zombiesInRange.Remove(selectedZombie);      
     }
 
 
@@ -226,50 +226,103 @@ public class Enemy : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
 
-        Zombie nearZombie = other.GetComponentInParent<Zombie>(); 
-        if (nearZombie != null)
-        {
-            bool exists = false;
-
-            foreach(var z in zombiesInRange)
+        if ( other.tag == "Zombie")
+        {            
+            Zombie nearZombie = other.GetComponentInParent<Zombie>();
+            if (nearZombie != null)
             {
-                
-                if (z == nearZombie && z.isAlive ==true)
+                bool exists = false;
+
+                foreach (var z in zombiesInRange)
                 {
-                    exists = true;
+
+                    if (z.GetComponent<Zombie>() == nearZombie && nearZombie.isAlive == true)
+                    {
+                        exists = true;
+                    }
+                }
+
+                if (!exists && nearZombie && nearZombie.isAlive == true)
+                {
+                    zombiesInRange.Add(nearZombie.gameObject);
+                    nearZombie.OnZombieDeath += () => EraseZombie(nearZombie.gameObject);
                 }
             }
+        }
 
-
-            if (!exists)
+        if (other.tag == "Player")
+        {
+            Player player = other.GetComponent<Player>();
+            
+            if (player != null)
             {
-                zombiesInRange.Add(nearZombie);
-                nearZombie.OnZombieDeath += ()=>EraseZombie(nearZombie);
-            }         
+                bool exists = false;
+
+                foreach (var z in zombiesInRange)
+                {
+
+                    if (z.GetComponent<Player>() == player && player.isAlive)
+                    {
+                        exists = true;
+                    }
+                }
+
+                if (!exists && player && player.isAlive == true)
+                {
+                    zombiesInRange.Add(player.gameObject);
+                    player.OnPlayerDeath += () => EraseZombie(player.gameObject);
+                }
+            }
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        Zombie nearZombie = other.GetComponentInParent<Zombie>();
-        if (nearZombie != null)
-        {
-            bool exists = false;
-
-            foreach (var z in zombiesInRange)
+        if ( other.tag == "Zombie")
+        {        
+            Zombie nearZombie = other.GetComponentInParent<Zombie>();
+            if (nearZombie != null)
             {
+                bool exists = false;
 
-                if (z == nearZombie && z.isAlive == true)
+                foreach (var z in zombiesInRange)
                 {
-                    exists = true;
+                    if (z.GetComponent<Zombie>() == nearZombie && nearZombie.isAlive == true)
+                    {
+                        exists = true;
+                    }
+                }
+
+                if (exists && nearZombie)
+                {
+                    zombiesInRange.Remove(nearZombie.gameObject);
+                    nearZombie.OnZombieDeath -= () => EraseZombie(nearZombie.gameObject);
                 }
             }
+        }
 
-
-            if (exists)
+        if (other.tag == "Player")
+        {
+            Player player = other.GetComponent<Player>();
+        
+            if (player != null)
             {
-                zombiesInRange.Remove(nearZombie);
-                nearZombie.OnZombieDeath -= () => EraseZombie(nearZombie);
+                bool exists = false;
+
+                foreach (var z in zombiesInRange)
+                {
+                    if (z.GetComponent<Player>() == player && player.isAlive)
+                    {
+                        exists = true;
+                    }
+                }
+
+                if (exists && player)
+                {
+                    zombiesInRange.Remove(player.gameObject);
+                    player.OnPlayerDeath -= () => EraseZombie(player.gameObject);
+                }
+
             }
         }
     }
@@ -285,12 +338,12 @@ public class Enemy : MonoBehaviour
         {
             Die();
         }
-        
+
     }
 
     void Die()
     {
-        if(OnEnemyDeath!= null)
+        if (OnEnemyDeath != null)
         {
             OnEnemyDeath();
         }

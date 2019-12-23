@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Enemy
   - AmmoBox
+  - Zombie
   layers:
   - Default
   - TransparentFX
@@ -19,9 +20,9 @@ TagManager:
   - Obstacle
   - Enemy
   - EnemyBody
-  - 
-  - 
-  - 
+  - PostProcessing
+  - Wall
+  - Player
   - 
   - 
   - 

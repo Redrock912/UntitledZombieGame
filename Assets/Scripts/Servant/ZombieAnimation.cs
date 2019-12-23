@@ -14,12 +14,15 @@ public class ZombieAnimation : MonoBehaviour
     //public Transform target;
     float sliderValue;
 
+    public float customSpeedMultiplier;
+
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponentInChildren<Animator>();
         zombie = GetComponent<Zombie>();
-    
+
+        
 
         zombie.OnZombieDeath += Death;
         
@@ -29,6 +32,7 @@ public class ZombieAnimation : MonoBehaviour
             ragdoll.isKinematic = true;
         }
 
+        agent.angularSpeed = 1500f;
     }
 
     private void Update()
@@ -43,7 +47,7 @@ public class ZombieAnimation : MonoBehaviour
         animator.SetFloat("speed", speedPercent, locomotionSmoothTime, 2.0f * Time.deltaTime);
         animator.SetFloat("angularspeed", angleSpeed, locomotionSmoothTime, Time.deltaTime);
         CheckZombieState();
-        
+
     }
 
     void CheckZombieState()
@@ -55,11 +59,11 @@ public class ZombieAnimation : MonoBehaviour
                 
                 break;
             case Zombie.CurrentState.Wander:
-                animator.SetFloat("speedMultiplier", 0.5f);
-                
+                animator.SetFloat("speedMultiplier",2f);
+
                 break;
             case Zombie.CurrentState.Chase:
-                animator.SetFloat("speedMultiplier", 1f);
+                animator.SetFloat("speedMultiplier", 5f);
                 break;
             case Zombie.CurrentState.Attack:
                 animator.SetBool("attack", true);

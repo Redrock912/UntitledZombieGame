@@ -4,9 +4,15 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    public BallProjectile ballProjectilePrefab;
+    public event System.Action OnItemLaunch;
+    public event System.Action OnPlayerDeath;
+
+    //public BallProjectile ballProjectilePrefab;
+    public Transform itemPrefab;
+
     public Transform launchPosition;
     public float movementSpeed = 6.0f;
+    public float impactMultiplier = 10.0f;
     public float minRotationDistance;
     Camera cam;
     Vector3 velocity;
@@ -15,78 +21,132 @@ public class Player : MonoBehaviour
     Rigidbody rigidBody;
 
     BallProjectile ballProjectile;
+    Transform item;
+
+    public bool isAlive = true;
+
+    ZombiePool zombiePool;
+
+    [HideInInspector]
+    public int currentSlotNumber;
+
+    public List<ItemObject> nearItems;
+    // 0 = rock, 1= fireworks
+    public int[] currentItems;
 
     private void Awake()
     {
         cam = Camera.main;
         rigidBody = GetComponent<Rigidbody>();
+        currentItems = new int[4];
+       
+        nearItems = new List<ItemObject>();
+       
     }
 
-    //void FacePlayer(Transform target)
-    //{
-    //    Vector3 dir = target.position - transform.position;
+    private void Start()
+    {
+        zombiePool = ZombiePool.Instance;
+        rigidBody = GetComponent<Rigidbody>();
+    }
 
-    //    Quaternion lookRotation = Quaternion.LookRotation(dir);
-    //    Vector3 rotation = Quaternion.Lerp(transform.rotation, lookRotation, Time.deltaTime * cameraLerpTime).eulerAngles;
-    //    transform.rotation = Quaternion.Euler(0f, rotation.y, 0f);
-    //}
 
-    
-
+    private void FixedUpdate()
+    {
+        if (isAlive)
+        {
+            rigidBody.MovePosition(rigidBody.position + velocity * Time.fixedDeltaTime);
+        }
+        
+    }
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            ballProjectile = Instantiate(ballProjectilePrefab, launchPosition.position, Quaternion.identity);
-            ballProjectile.launcher = launchPosition;
-            
-        }
-        else
-        {
-            velocity = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized * movementSpeed;
-        }
-
-    
-
-        if (Input.GetAxisRaw("Horizontal") > 0)
-        {
-
-        }
-
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hitInfo;
-
-        if (Physics.Raycast(ray, out hitInfo))
+        if (isAlive)
         {
 
 
-            Vector3 groundPosition = new Vector3(hitInfo.point.x, 0, hitInfo.point.z);
-            
-            if (Vector3.Magnitude(groundPosition - transform.position) > minRotationDistance)
+            if (Input.GetMouseButtonDown(0) && currentItems[currentSlotNumber] > 0)
             {
-                transform.LookAt(groundPosition + Vector3.up * transform.position.y);
+                currentItems[currentSlotNumber]--;
+                item = Instantiate(itemPrefab, launchPosition.position, transform.rotation);
+
+                item.parent = launchPosition;
+                //ballProjectile.launcher = launchPosition;
+
             }
 
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                PickUpItem();
+            }
+
+            velocity = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical")).normalized * movementSpeed;
+
+
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            LayerMask groundMask = LayerMask.GetMask("MousePosition");
+            RaycastHit hitInfo;
+
+            if (Physics.Raycast(ray, out hitInfo, 100, groundMask))
+            {
+
+                Vector3 groundPosition = new Vector3(hitInfo.point.x, 0, hitInfo.point.z);
+
+                if (Vector3.Magnitude(groundPosition - transform.position) > minRotationDistance)
+                {
+                    transform.LookAt(groundPosition + Vector3.up * transform.position.y);
+                }
+
+            }
         }
-
-
-        
-        //Vector3 mousePosition = cam.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, cam.transform.position.y));
-
-        //transform.LookAt(mousePosition);
-
-        //print(mousePosition + "asdf");
-
-
-        
-        
-
-        
     }
-    
-    private void FixedUpdate()
+
+
+
+    public void AddNearItem(ItemObject item)
     {
-        rigidBody.MovePosition(rigidBody.position + velocity * Time.fixedDeltaTime);
+        nearItems.Add(item);
+    }
+
+    public void RemoveNearItem(ItemObject item)
+    {
+        if (nearItems.Contains(item))
+        {
+            nearItems.Remove(item);
+        }
+       
+    }
+
+    public void PickUpItem()
+    {
+
+        if (nearItems.Count > 0)
+        {
+
+            currentItems[(int)nearItems[0].itemType]++;
+
+            nearItems[0].PickedUpItem();
+            nearItems.RemoveAt(0);
+
+        }
+    }
+
+
+    // 1 hit
+    public void TakeDamage(Vector3 forceDirection = new Vector3())
+    {
+        isAlive = false;
+
+        rigidBody.constraints = RigidbodyConstraints.None;
+        if (!isAlive)
+        {
+            rigidBody.AddForce(forceDirection * impactMultiplier, ForceMode.Impulse);
+
+            if (OnPlayerDeath != null)
+            {
+                OnPlayerDeath();              
+            }
+        }
     }
 }
