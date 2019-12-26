@@ -27,7 +27,7 @@ public class Zombie : MonoBehaviour , IPooledObject
     Vector3 attractivePosition;
     private float enemySafeDistance =0.1f;
 
-    public FieldOfView fowReference;
+    public FieldOfView fovReference;
 
     [HideInInspector]
     public bool isAlive = true;
@@ -90,12 +90,14 @@ public class Zombie : MonoBehaviour , IPooledObject
         WanderHandle = StartCoroutine("FindNextWanderPoint");
     }
 
-    public void OnObjectSpawn()
+    public void OnObjectSpawn(Vector3 position)
     {
+            
         currentState = CurrentState.Idle;
         attractivePosition = noPosition;
         wanderPoint = RandomWanderPoint();
         agent = GetComponent<NavMeshAgent>();
+        agent.Warp(position);
         WanderHandle = StartCoroutine("FindNextWanderPoint");
     }
 
@@ -104,9 +106,9 @@ public class Zombie : MonoBehaviour , IPooledObject
         if (!target)
         {
             // 눈앞에 보이는걸 타겟으로 삼자
-            if (fowReference.visibleTargets.Count > 0)
+            if (fovReference.visibleTargets.Count > 0)
             {
-                target = fowReference.visibleTargets[0];
+                target = fovReference.visibleTargets[0];
                 //Attack
                 if (target)
                 {

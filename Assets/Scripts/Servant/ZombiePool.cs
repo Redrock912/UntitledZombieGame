@@ -58,11 +58,12 @@ public class ZombiePool : MonoBehaviour
         zombieToSpawn.transform.position = position;
         zombieToSpawn.transform.rotation = rotation;
 
+        print("where I really spawned " + zombieToSpawn.transform.position);
         IPooledObject pooledObject = zombieToSpawn.GetComponent<IPooledObject>();
 
         if(pooledObject != null)
         {
-            pooledObject.OnObjectSpawn();
+            pooledObject.OnObjectSpawn(position);
         }
 
 

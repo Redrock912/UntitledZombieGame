@@ -8,7 +8,8 @@ public class Player : MonoBehaviour
     public event System.Action OnPlayerDeath;
 
     //public BallProjectile ballProjectilePrefab;
-    public Transform itemPrefab;
+    public List<ItemLauncher> itemLauncherPrefabList;
+    
 
     public Transform launchPosition;
     public float movementSpeed = 6.0f;
@@ -21,7 +22,7 @@ public class Player : MonoBehaviour
     Rigidbody rigidBody;
 
     BallProjectile ballProjectile;
-    Transform item;
+    ItemLauncher item;
 
     public bool isAlive = true;
 
@@ -68,10 +69,16 @@ public class Player : MonoBehaviour
 
             if (Input.GetMouseButtonDown(0) && currentItems[currentSlotNumber] > 0)
             {
-                currentItems[currentSlotNumber]--;
-                item = Instantiate(itemPrefab, launchPosition.position, transform.rotation);
 
-                item.parent = launchPosition;
+                if (currentItems[currentSlotNumber] >= itemLauncherPrefabList[currentSlotNumber].requiredAmount)
+                {
+                    currentItems[currentSlotNumber] -= itemLauncherPrefabList[currentSlotNumber].requiredAmount;
+                    item = Instantiate(itemLauncherPrefabList[currentSlotNumber], launchPosition.position, transform.rotation);
+
+                    item.transform.parent = launchPosition;
+                }
+                
+               
                 //ballProjectile.launcher = launchPosition;
 
             }

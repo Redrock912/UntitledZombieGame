@@ -13,8 +13,9 @@ public class ItemObject : MonoBehaviour
 
     public Renderer rd;
     Material outlineMaterial;
-    
-    
+
+    // required amount to instantiate
+    public int requiredAmount=1;
 
     public ItemType itemType;
 
@@ -23,7 +24,7 @@ public class ItemObject : MonoBehaviour
     Shader sd;
     public enum ItemType
     {
-        Rock=0, Fireworks=1
+        Rock=0, Scrap=1
     }
 
     

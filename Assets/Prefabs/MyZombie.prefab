@@ -1029,7 +1029,7 @@ MonoBehaviour:
   viewAngle: 80
   wanderTimer: 3
   target: {fileID: 0}
-  fowReference: {fileID: 489450893}
+  fovReference: {fileID: 489450893}
   isAlive: 1
   recentlyAttracted: 0
   currentState: 0

@@ -15,9 +15,9 @@ public class ItemLauncher : MonoBehaviour
     float magnitude;
     float angle;
     Vector3 launcherAngle;
-    private bool isLaunched =false;
-    Collider[] colliderArray;
-
+    protected bool isLaunched =false;
+    protected Collider[] colliderArray;
+    public int requiredAmount = 1;
     // Start is called before the first frame update
     void Start()
     {
@@ -45,7 +45,7 @@ public class ItemLauncher : MonoBehaviour
 
         if (Input.GetMouseButtonUp(0) && isLaunched == false)
         {
-            print("Launch!!!");
+        
             Launch();
         }
     }
@@ -91,14 +91,11 @@ public class ItemLauncher : MonoBehaviour
             {
                 zombie = collider.transform.GetComponentInParent<Zombie>();
 
-
                 if (zombie != null)
                 {
-
                     zombie.SetTargetPosition(transform.position);
                 }
             }
-
             Destroy(gameObject, 0.5f);
         }
 

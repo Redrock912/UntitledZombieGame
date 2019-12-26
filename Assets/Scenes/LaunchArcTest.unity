@@ -154,6 +154,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactDistance: 2
+  rd: {fileID: 0}
+  requiredAmount: 1
   itemType: 0
 --- !u!135 &58980048
 SphereCollider:
@@ -262,6 +264,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactDistance: 2
+  rd: {fileID: 0}
+  requiredAmount: 1
   itemType: 0
 --- !u!135 &116882917
 SphereCollider:
@@ -463,6 +467,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactDistance: 2
+  rd: {fileID: 0}
+  requiredAmount: 1
   itemType: 0
 --- !u!135 &356764205
 SphereCollider:
@@ -664,6 +670,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactDistance: 2
+  rd: {fileID: 0}
+  requiredAmount: 1
   itemType: 0
 --- !u!135 &510870083
 SphereCollider:
@@ -1125,6 +1133,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactDistance: 2
+  rd: {fileID: 0}
+  requiredAmount: 1
   itemType: 0
 --- !u!135 &1495276759
 SphereCollider:

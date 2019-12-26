@@ -61,7 +61,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interactDistance: 2
   rd: {fileID: 3566411889336923053}
-  itemType: 0
+  itemType: 1
 --- !u!54 &4175448089070805236
 Rigidbody:
   m_ObjectHideFlags: 0
