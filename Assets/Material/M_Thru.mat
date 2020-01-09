@@ -7,7 +7,7 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: M_ItemObject
+  m_Name: M_Thru
   m_Shader: {fileID: 4800000, guid: cbe6fb25a633b574f8c0103988136588, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -52,9 +52,6 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - Boolean_DCB6D455: 0
-    - Vector1_4E2B082E: 1
-    - Vector1_C7AB5698: 0
     - _AlphaClip: 0
     - _Blend: 0
     - _BumpScale: 1
@@ -77,13 +74,12 @@ Material:
     - _WorkflowMode: 1
     - _ZWrite: 1
     m_Colors:
-    - Color_81A62601: {r: 1, g: 1, b: 1, a: 0}
-    - Vector3_9FDB9054: {r: 0, g: 0, b: 0, a: 0}
     - _BaseColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     - _Color: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    - _Color1: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
---- !u!114 &7497849621280635429
+--- !u!114 &5565843391893768686
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}
